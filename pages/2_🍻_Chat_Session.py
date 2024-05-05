@@ -43,10 +43,7 @@ def update_selectbox_cs():
     if selectbox_cs == None:
         st.session_state.disabled_flag_chat_session = True
     return selectbox_cs
-
 # 更新文本输入框
-
-
 def update_text_input_cs_name():
     st.session_state.key_text_input_cs_name += 1
     return text_input_cs_name_placeholder.text_input(
@@ -56,10 +53,7 @@ def update_text_input_cs_name():
         key="text_input_cs_name"+str(st.session_state.key_text_input_cs_name),
         disabled=st.session_state.disabled_flag_chat_session
     )
-
 # 更新删除按钮
-
-
 def update_button_delete():
     st.session_state.key_button_delete += 1
     # 删除最后一个会话时，不能禁用，需重新渲染
@@ -88,8 +82,6 @@ with st.sidebar:
 
 text_input_cs_name_placeholder = st.empty()
 text_input_cs_name = update_text_input_cs_name()
-
-
 col1, col2, col3 = st.columns(3)
 with col1:
     button_delete_placeholder = st.empty()
@@ -108,7 +100,6 @@ with col1:
         update_text_input_cs_name()
         # 更新删除按钮
         update_button_delete()
-
 with col2:
     button_save = st.button(
         label="Save",

@@ -15,12 +15,12 @@ from db_api.api.api_qwen import call_qwen
 
 
 def describe_knowledge_base(vecbase_base_name: str, text_list: list):
-    # 获取之前知识库描述
+    # 获取之前知识库概要
     vector_base_info = db.get_vector_base_info_by_name(vecbase_base_name)
     knowledge_base_detail = vector_base_info.detail
     """ 测试 """
     print(f"\nOriginal knowledge base description:\n{knowledge_base_detail}\n")
-    # 构建描述提示词
+    # 构建概要提示词
     prompt = f'''
     Original description of the knowledge base:{knowledge_base_detail}
     A list of texts to add to the knowledge base:{str(text_list[0:4])}
@@ -34,14 +34,14 @@ def describe_knowledge_base(vecbase_base_name: str, text_list: list):
     
     """ 测试 """
     print(f"\nDescribe Prompt:\n{prompt}\n")
-    # 调用千问接口，获取新的知识库描述
+    # 调用千问接口，获取新的知识库概要
     knowledge_base_detail = call_qwen([{
         "role": "user",
         "content": prompt
     }])
     """ 测试 """
     print(f"\nNew knowledge base description:\n{knowledge_base_detail}\n")
-    # 更新知识库描述
+    # 更新知识库概要
     vector_base_info.detail = knowledge_base_detail
     db.update_vector_base_detail(vector_base_info)
 

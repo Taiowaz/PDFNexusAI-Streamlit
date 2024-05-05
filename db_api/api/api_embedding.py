@@ -1,4 +1,3 @@
-from cgitb import text
 from dashscope import BatchTextEmbedding
 import dashscope
 import json

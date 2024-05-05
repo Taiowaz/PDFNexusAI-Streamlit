@@ -39,7 +39,6 @@ def call_stream_with_messages(chat_session_name, messages: list):
             temperature=0.01,       # 设置输出随意度
             output_in_full=False,     # 每次输出增量
         )
-
         content = ""
         for resp in resps:
             if resp.status_code == HTTPStatus.OK:
@@ -56,6 +55,5 @@ def call_stream_with_messages(chat_session_name, messages: list):
                 'content': content
             }
         )
-
     # 返回生成器
     return stream()

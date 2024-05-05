@@ -28,7 +28,7 @@ def parse_pdf(filename: str) -> list:
         extract_image_block_output_dir=tempfile.gettempdir()
     )
 
-    """  清洗页头页脚 """
+    """  去除页头页脚 """
     filtered_elements = [
         element
         for element in elements

@@ -158,7 +158,6 @@ def add_update_kb(text_input_kbs):
             else:
                 # 知识库名冲突
                 st.toast("Knowledge Base name already exists.", icon="⚠️")
-
         else:
             # 提示输入有效知识库名称
             st.toast("Please enter a valid knowledge base name.", icon="⚠️")
@@ -193,15 +192,6 @@ with st.sidebar:
 text_input_kbs_placeholder = st.empty()
 # 更新知识库名称输入框
 text_input_kbs = update_text_input_kbs()
-
-# # Function to stream the animations
-
-# def load_lottiefiles(filepath: str):
-#     with open(filepath, 'r') as f:
-#         return json.load(f)
-
-# load_lottiefiles(r'file/PDF.json')
-
 
 # 上传PDF文件组件
 upload_pdfs = st.file_uploader(
