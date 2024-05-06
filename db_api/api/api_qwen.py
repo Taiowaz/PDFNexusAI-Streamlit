@@ -44,8 +44,6 @@ def call_stream_with_messages(chat_session_name, messages: list):
             if resp.status_code == HTTPStatus.OK:
                 content_incre = resp.output.choices[0]['message']['content']
                 content += content_incre
-                with open("file/test/qwen.txt", "w+") as f:
-                    f.write(str(resp)+"\n\n")
                 yield content_incre
         # 存储到数据库中
         db.save_message_by_chat_session_name(

@@ -58,7 +58,7 @@ def update_text_input_kbs():
     text_input_kbs = text_input_kbs_placeholder.text_input(
         label=st.session_state.label_text_input_kbs,
         placeholder=st.session_state.placeholder_text_input_kbs,
-        value=st.session_state.selected_kb,
+        # value=st.session_state.selected_kb, # 选中已有知识库时，不会显示当前值，故注释
         key="text_input"+str(st.session_state.key_text_input_kbs),
         disabled=st.session_state.disabled_text_input
     )
@@ -83,14 +83,16 @@ def update_button_delete():
 
 def delete_upddate_kb():
     # 删除知识库
-    pv.delete_vectorbase(text_input_kbs)
-    # 更新知识库下拉框
-    update_selectbox_kbs()
-    # 更新知识库名称输入框
+    pv.delete_vectorbase(st.session_state.selected_kb)
+
+    # 更新相关参数
     st.session_state.disabled_text_input = False
     st.session_state.label_text_input_kbs = "Create A New Knowledge Base"
     st.session_state.placeholder_text_input_kbs = "Enter a Knowledge Base Name"
     st.session_state.selected_kb = None
+    # 更新知识库下拉框
+    update_selectbox_kbs()
+    # 更新知识库名称输入框
     update_text_input_kbs()
     # 更新删除按钮状态
     update_button_delete()
@@ -99,7 +101,7 @@ def delete_upddate_kb():
 # 添加并更新知识库
 
 
-def add_update_kb(text_input_kbs):
+def add_update_kb():
     # 读取上传的PDF文件，并保存在临时文件夹中
     def read_pdf(upload_pdfs) -> str:
         # 创建临时文件夹
@@ -143,6 +145,7 @@ def add_update_kb(text_input_kbs):
                     pv.process_pdf_vectorbase_in_threads(
                         selectbox_kbs, pdf_folder)
                     st.session_state.disabled_selectbox_kbs = False
+                    # 更新文件上传组件
                 st.toast(
                     "Knowledge Base created and PDF report processed successfully!", icon="🎉")
                 # 更新知识库下拉框
@@ -174,32 +177,30 @@ with st.sidebar:
     selectbox_kbs = update_selectbox_kbs()
 
     # 设置会话参数,用于控制知识库名称输入框
-    def set_kb_session_params(selectbox_kbs):
-        # 选中已有知识库，禁用编辑名字
-        if selectbox_kbs:
-            st.session_state.selected_kb = selectbox_kbs
-            st.session_state.disabled_text_input = True
-            st.session_state.label_text_input_kbs = "Current Knowledge Base Name"
-        else:
-            # 未选用知识库，创建新知识库,可编辑名字
-            st.session_state.selected_kb = selectbox_kbs
-            st.session_state.disabled_text_input = False
-            st.session_state.label_text_input_kbs = "Create A New Knowledge Base"
-            st.session_state.placeholder_text_input_kbs = "Enter a Knowledge Base Name"
-
-    set_kb_session_params(selectbox_kbs)
+    # 选中已有知识库，禁用编辑名字,同时将选中值以placeholder参数显示在输入框中
+    if selectbox_kbs:
+        st.session_state.selected_kb = selectbox_kbs
+        st.session_state.disabled_text_input = True
+        st.session_state.label_text_input_kbs = "Current Knowledge Base Name"
+        st.session_state.placeholder_text_input_kbs = selectbox_kbs
+    else:
+        # 未选用知识库，创建新知识库,可编辑名字
+        st.session_state.selected_kb = selectbox_kbs
+        st.session_state.disabled_text_input = False
+        st.session_state.label_text_input_kbs = "Create A New Knowledge Base"
+        st.session_state.placeholder_text_input_kbs = "Enter a Knowledge Base Name"
 
 text_input_kbs_placeholder = st.empty()
 # 更新知识库名称输入框
 text_input_kbs = update_text_input_kbs()
 
 # 上传PDF文件组件
+
 upload_pdfs = st.file_uploader(
     label="Upload PDF Report",
     type=["pdf"],
     accept_multiple_files=True
 )
-
 # 按钮组件
 col1, col2 = st.columns(2)
 with col1:
@@ -214,4 +215,4 @@ with col2:
         type="secondary",
     )
     if button_save:
-        selectbox_kbs = add_update_kb(text_input_kbs=text_input_kbs)
+        selectbox_kbs = add_update_kb()

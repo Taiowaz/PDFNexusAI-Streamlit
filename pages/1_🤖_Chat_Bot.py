@@ -83,6 +83,7 @@ if content := st.chat_input("Type a message..."):
     def ai_resp_gen():
         messages = st.session_state.messages
         knowledgebase_name = selected_kb
+        print(f"\nknowledgebase_name: {knowledgebase_name}\n")
         ai_resp_stream = sm.talk_stream_with_qwen(
             chat_session_name=st.session_state.current_chat_cs_name,
             vectorbase_name=knowledgebase_name,

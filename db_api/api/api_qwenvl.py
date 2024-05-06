@@ -30,6 +30,4 @@ def vision_completion(image_path: str) -> str:
     response = MultiModalConversation.call(model="qwen-vl-max",
                                            messages=messages,
                                            max_length=500)
-    with open("file/test/qwenvl.txt", "w+") as f:
-        f.write(str(response)+"\n\n")
     return response.output.choices[0].message.content[0]["text"]  # 返回识别结果

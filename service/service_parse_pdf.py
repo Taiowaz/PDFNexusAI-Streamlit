@@ -22,6 +22,7 @@ def parse_pdf(filename: str) -> list:
     elements = partition_pdf(
         filename=filename,
         strategy=PartitionStrategy.HI_RES,
+        infer_table_structure=True,              # 推断表格结构
         extract_images_in_pdf=True,
         extract_image_block_types=["Image", "Table"],
         extract_image_block_to_payload=False,
@@ -35,13 +36,21 @@ def parse_pdf(filename: str) -> list:
         if not (isinstance(element, Header) or isinstance(element, Footer))
     ]
 
-    min_image_width = 250
-    min_image_height = 270
-
     """ 对文本进行清洗，图像转换为描述性文本 """
+    # 表格在切分时就已经被转换为html
     for element in filtered_elements:
-        if element.text != "":
-            element.text = group_broken_paragraphs(element.text)
+        # 图像转换为描述性文本
+        if isinstance(element, Image):
+            point1 = element.metadata.coordinates.points[0]
+            point2 = element.metadata.coordinates.points[2]
+            width = abs(point2[0]-point1[0])
+            height = abs(point2[1]-point1[1])
+            # 图像清洗
+            if width >= 300 and height >= 300:
+                element.text = vision_completion(element.metadata.image_path)
+        # 非表格元素文本断行合并清洗
+        elif not isinstance(element, Table):
+            element.text = group_broken_paragraphs(element.text)  # 合并断行
             element.text = clean(
                 element.text,
                 bullets=False,
@@ -49,50 +58,45 @@ def parse_pdf(filename: str) -> list:
                 dashes=False,
                 trailing_punctuation=False
             )
-        elif isinstance(element, Image):
-            point1 = element.metadata.coordinates.points[0]
-            point2 = element.metadata.coordinates.points[2]
-            width = abs(point2[0]-point1[0])
-            height = abs(point2[1]-point1[1])
-            if width >= min_image_width and height >= min_image_height:
-                element.text = vision_completion(element.metadata.image_path)
 
     """ 进行分块 """
     chunks = chunk_by_title(
         elements=filtered_elements,
-        multipage_sections=True,
-        combine_text_under_n_chars=0,
-        new_after_n_chars=None,
+        multipage_sections=True,               # 章节跨多页
+        combine_text_under_n_chars=128,         # 低于某字符的文本合并
+        new_after_n_chars=None,                # 长度超过多少字符后新建
         max_characters=1024,
     )
 
     text_list = []
 
     for chunk in chunks:  # 遍历分块，获取文本列表
-        if isinstance(chunk, CompositeElement):
-            text = chunk.text
-            text_list.append(text)
-        elif isinstance(chunk, Table):  # 表格转换为html
+        # 获取表格html
+        if isinstance(chunk, Table):  # 表格转换为html
             if chunk.metadata.text_as_html is not None:
                 if text_list:  # 列表不为空
                     text_list[-1] = text_list[-1] + \
                         ":" + chunk.metadata.text_as_html        # 用冒号进行分隔标题与表格，防止与批量转换向量的换行符冲突
                 else:
                     text_list.append(chunk.metadata.text_as_html)
+        # 文本添加
+        elif isinstance(chunk, CompositeElement):
+            text = chunk.text
+            text_list.append(text)
 
     # 将文字中的换行符替换为空格，防止与批量转换向量的换行符冲突
     text_list = [text.replace("\n", "//") for text in text_list]
+
     # 打印日志
     print(f"\nParsed: {filename}\n")
-    return text_list
 
-# 分解文件夹内多个pdf报告
+    # 测试代码
+    # file_name = filename.split("/")[-1]
+    # os.makedirs("file/test/parse_pdf"+file_name, exist_ok=True)
+    # i = 0
+    # for text in text_list:
+    #     with open("file/test/parse_pdf"+file_name+"/"+str(i)+".txt", "w") as f:
+    #         f.write(text)
+    #     i += 1
 
-
-def parse_pdflist(dir: str) -> list:
-    files = os.listdir(dir)
-    text_list = []
-    for file_name in files:
-        file_path = os.path.join(dir, file_name)
-        text_list.extend(parse_pdf(file_path))
     return text_list

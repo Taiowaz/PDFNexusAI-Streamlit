@@ -69,14 +69,14 @@ def talk_stream_with_qwen(chat_session_name, vectorbase_name, messages: list):
         # 判断是否需要查询知识库
         flag = is_need_query_knowledgebase(messages, vectorbase_name)
         """ 测试！！！ """
-        # print("\nisQuery:"+str(flag)+"\n")
+        print("\nisQuery:"+str(flag)+"\n")
         if flag.lower() == "yes":
             input_content = query_integrate_content(
                 content=input_content,
                 vectorbase_name=vectorbase_name
             )
     """ 测试！！！ """
-    # print("\ninput_content:"+str(input_content)+"\n")
+    print("\ninput_content:"+str(input_content)+"\n")
     # 构建messages 输入到LLM的内容，带有提示词
     messages[-1]['content'] = input_content
     """ 测试！！！ """
